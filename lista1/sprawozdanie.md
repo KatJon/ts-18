@@ -35,7 +35,12 @@ PING chinadaily.com.cn (124.127.180.200): 32 data bytes
 ```
 
 * TTL otrzymane: `35`
-* Odległość: `64 - 35 = 29 przeskoków` 
+* Odległość:
+Wyznaczenie odległości z powrotem jest problematyczne, ze względu na nieznaną początkową wartość TTL ustawioną przez serwer. Możliwe wyniki
+    + `64 - 35 = 29 przeskoków` 
+    + `128 - 35 = 93 przeskoki`
+
+Najprawdopobniejsza wydaje się odpowiedź `29`, która jest zbliżona do drogi *do*
 
 #### Największy możliwy niefragmentowany pakiet
 ```console
@@ -172,3 +177,7 @@ traceroute to chinadaily.com.cn (124.127.180.200), 64 hops max, 52 byte packets
 Zaobserwowałem dużą ilość przeskoków pomiędzy routerami, po stronie ISP (hosty `*.atlas.cogentco.com`).
 
 Poszukiwanie przerwałem po 54 przeskokach, co było liczbą znacznie przekraczającą wcześniej wyznaczone dane. Ogromna ilość przeskoków może być spowodowana topologią chińskiej sieci oraz nadzorowi nad tamtejszym ruchem sieciowym.
+
+## `Wireshark`
+
+Program Wireshark służy do obserwowania ruchu sieciowego, tzn. można zobaczyć zawartość pakietów wysyłanych i odbieranych przez komputer.
