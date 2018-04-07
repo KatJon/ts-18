@@ -1,68 +1,63 @@
 #!/usr/bin/env python3
-import numpy as np
 import random as rng
+import networkx as nx
+import matplotlib.pyplot as plt
 
-from model1 import *
+def draw_graph(G, T, R, K):
+    plt.figure(K)
+    plt.suptitle(T)
+    plt.title("R = {0:.2%}".format(R))
+    layout = nx.circular_layout(G)
+    nx.draw_circular(G, with_labels=True)
+    edgeLabels = {}
+    for a, b in G.edges():
+        weight = G.get_edge_data(a, b, {"weight":0})["weight"]
+        edgeLabels[(a, b)] = str(weight)
+    nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edgeLabels, clip_on=False) # draw the edge labels
 
-N = 100000
-
-def test_model(model, name):
+def test_connectivity(G):
+    N = 10000
     K = 0
-    for i in range(N):
-        src = rng.randint(0, model.size-1)
-        dest = rng.randint(0, model.size-1)
-        connected = model.connect(src, dest)
-        K = K + 1 if connected else K
+    for _ in range(N):
+        copy = G.copy()
+        for a, b in G.edges():
+            H = G.get_edge_data(a, b, {"weight":0})["weight"]
+            roll = rng.random()
+            if (roll > H):
+                copy.remove_edge(a, b)
+        
+        if nx.is_connected(copy):
+            K += 1
     
-    print("{0} => Success: {1}, Sent: {2}, Ratio: {3}%".format(name, K, N, 100*K/N))
+    return K/N
 
 if __name__ == "__main__":
-    SIZE = 20
+    G = nx.Graph()
+    G.add_nodes_from(range(1, 21))
 
-    net1 = Model1(SIZE)
-    for i in range(0, SIZE-1):
-        net1.add(i, i+1, 0.95)
+    for i in range(1,20):
+        G.add_edge(i, i+1, weight=0.95)
+    ratio = test_connectivity(G)
+    title = "Zad 1.1"
+    draw_graph(G, title, ratio, 1)
 
-    net1.use_smart = False
-    test_model(net1, "Model 1 Classic")
-    net1.use_smart = True
-    test_model(net1, "Model 1 Smart")
+    G.add_edge(1, 20, weight=0.95)
+    ratio = test_connectivity(G)
+    title = "Zad 1.2"
+    draw_graph(G, title, ratio, 2)
 
-    net1.add(19, 0, 0.95)
+    G.add_edge(1, 10, weight=0.8)
+    G.add_edge(5, 15, weight=0.7)
+    ratio = test_connectivity(G)
+    title = "Zad 1.3"
+    draw_graph(G, title, ratio, 3)
 
-    net1.use_smart = False
-    test_model(net1, "Model 2 Classic")
-    net1.use_smart = True
-    test_model(net1, "Model 2 Smart")
+    for i in range(4):
+        u,v = rng.choice(list(nx.non_edges(G)))
+        G.add_edge(u, v, weight=0.4)
 
-    net1.add(0, 9, 0.8)
-    net1.add(4, 14, 0.7)
+    ratio = test_connectivity(G)
+    title = "Zad 1.4"
+    draw_graph(G, title, ratio, 4)
 
-    net1.use_smart = False
-    test_model(net1, "Model 3 Classic")
-    net1.use_smart = True
-    test_model(net1, "Model 3 Smart")
-
-    added = 0
-    while added < 4:
-        u = rng.randint(0, net1.size-1)
-        v = rng.randint(0, net1.size-1)
-        if net1.conn[u][v] == 0:
-            net1.add(u, v, 0.4)
-            added += 1
-    
-    net1.use_smart = False
-    test_model(net1, "Model 4 Classic")
-    net1.use_smart = True
-    test_model(net1, "Model 4 Smart")
-
-    # net2 = Model1(SIZE)
-    # for i in range(4*SIZE):
-    #     u = rng.randint(0, net2.size-1)
-    #     v = rng.randint(0, net2.size-1)
-    #     net2.add(u, v, rng.random())
-    
-    # net2.use_smart = False
-    # test_model(net2, "Random Classic")
-    # net2.use_smart = True
-    # test_model(net2, "Random Smart")
+    plt.show()
