@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 
 PACKET_SIZE = 8
 
-def draw_graph(G, Title, K):
+def draw_graph(G, Title, T, K):
     plt.figure(K)
     plt.suptitle(Title)
-    plt.title("T = {0:.2%}".format(0))
+    plt.title("T = {0:.2%}".format(T))
     layout = nx.circular_layout(G)
     nx.draw_circular(G, with_labels=True)
 
@@ -41,7 +41,9 @@ def dijkstra(G, N, C, A, src, dest):
         _, u = Q.get()
         for v in range(10):
             if (u,v) in G.edges() and d[v] > d[u] + 1:
-                if C[u][v] > PACKET_SIZE * (A[u][v] + N[u][v]):
+                sumA = A[u][v] + N[u][v]
+                newA = PACKET_SIZE * sumA
+                if C[u][v] > newA:
                     d[v] = d[u] + 1
                     prev[v] = u
                     Q.put((d[v], v))
@@ -82,7 +84,7 @@ def N_matrix():
 def C_matrix(G):
     C = empty_matrix()
     for u,v in G.edges():
-        bits = 1024 * PACKET_SIZE
+        bits = 512 * PACKET_SIZE
         C[u][v] = bits
         C[v][u] = bits
     return C
@@ -95,14 +97,51 @@ def A_matrix(G, N, C):
                 route(G, N, C, A, i, j)
     return A
 
+def calc_timeout(G, N, C, A):
+    sum_N = 0
+    sum_e = 0
+
+    for i in range(10):
+        for j in range(10):
+            if i > j:
+                sum_N += N[i][j]
+    
+    for u,v in G.edges():
+        sum_e += A[u][v] / (C[u][v] / PACKET_SIZE - A[u][v])
+    
+    return sum_e/sum_N
+
+def test_reliability(G, N, C, p, T_max):
+    Reps = 10000
+    K = 0
+    for _ in range(Reps):
+        copy = G.copy()
+        for a, b in G.edges():
+            roll = rng.random()
+            if (roll > p):
+                copy.remove_edge(a, b)
+        
+        if nx.is_connected(copy):
+            A = A_matrix(G, N, C)
+            print(A)
+            T = calc_timeout(G, N, C, A)
+            if T < T_max:
+                K += 1
+
+    return 100*K/Reps
+
 if __name__ == "__main__":
     G = makeGraph()
     N = N_matrix()
     C = C_matrix(G)
     A = A_matrix(G, N, C)
-    print(N)
-    print(C)
-    print(A)
+    T = calc_timeout(G, N, C, A)
 
-    draw_graph(G, "Petersen", 1)
-    plt.show()
+    T_max = 1.1 * T
+    p = 0.9
+
+    R = test_reliability(G, N, C, p, T_max)
+    print("Reliability: {0:.2f}%".format(R))
+
+    # draw_graph(G, "Petersen, bazowy", T, 1)
+    # plt.show()
