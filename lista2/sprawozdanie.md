@@ -74,11 +74,52 @@ Wyjściowa macierz A:
 
 Opóźnienie dla podstawowej topologii: `T = 0.87%`
 
-Przyjmijmy, że `T_max` będzie równe `T_max = 1.1 * T`
-Prawdopodobieństwo zerwania krawędzi `p = 0.9`
 
+### Test 1
 ```
-Reliability: 98.83%
+T_max = 1.5*T
+p = 0.9
+Reliability: 20.20%
 ```
 
-Tak wysoka niezawodność jest związana z wysoką spójnością grafu Petersena.
+### Test 2
+```
+T_max = 1.5*T
+p = 0.95
+Reliability: 46.40%
+```
+
+### Test 3
+```
+T_max = 2*T
+p = 0.9
+Reliability: 32.79%
+```
+
+### Test 4
+```
+T_max = 2*T
+p = 0.95
+Reliability: 55.47%
+```
+
+### Test 5
+```
+T_max = 2.5*T
+p = 0.9
+Reliability: 73.32%
+```
+
+### Test 6
+```
+T_max = 2.5*T
+p = 0.95
+Reliability: 86.36%
+```
+
+### Test 7
+```
+T_max = 1.5*T
+p = 0.99
+Reliability: 86.32%
+```

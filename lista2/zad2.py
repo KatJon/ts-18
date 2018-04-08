@@ -122,9 +122,8 @@ def test_reliability(G, N, C, p, T_max):
                 copy.remove_edge(a, b)
         
         if nx.is_connected(copy):
-            A = A_matrix(G, N, C)
-            print(A)
-            T = calc_timeout(G, N, C, A)
+            A = A_matrix(copy, N, C)
+            T = calc_timeout(copy, N, C, A)
             if T < T_max:
                 K += 1
 
@@ -137,11 +136,26 @@ if __name__ == "__main__":
     A = A_matrix(G, N, C)
     T = calc_timeout(G, N, C, A)
 
-    T_max = 1.1 * T
-    p = 0.9
+    T_max = 2 * T
+    p = 0.95
 
-    R = test_reliability(G, N, C, p, T_max)
-    print("Reliability: {0:.2f}%".format(R))
+    tests = [
+        (1.5, 0.9),
+        (1.5, 0.95),
+        (2, 0.9),
+        (2, 0.95),
+        (2.5, 0.9),
+        (2.5, 0.95),
+        (1.5, 0.99)
+    ]
 
-    # draw_graph(G, "Petersen, bazowy", T, 1)
-    # plt.show()
+    for ratio, p in tests:
+        T_max = ratio * T
+        R = test_reliability(G, N, C, p, T_max)
+        print("T_max = {0}*T".format(ratio))
+        print("p = {0}".format(p))
+        print("Reliability: {0:.2f}%".format(R))
+        print("")
+
+    draw_graph(G, "Petersen, bazowy", T, 1)
+    plt.show()
