@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+import queue as q
+import numpy as np
 import random as rng
 import networkx as nx
 import matplotlib.pyplot as plt
+
+PACKET_SIZE = 8
 
 def draw_graph(G, Title, K):
     plt.figure(K)
@@ -9,12 +13,40 @@ def draw_graph(G, Title, K):
     plt.title("T = {0:.2%}".format(0))
     layout = nx.circular_layout(G)
     nx.draw_circular(G, with_labels=True)
-    edgeLabels = {}
-    for a, b in G.edges():
-        cap = G.get_edge_data(a, b, {"cap":0})["cap"]
-        edgeLabels[(a, b)] = str(cap)
-    nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edgeLabels, clip_on=False) # draw the edge labels
 
+def route(G, N, C, A, src, dest):
+    d, prev = dijkstra(G, N, C, A, src, dest)
+    payload = N[src][dest]
+    cur_route = []
+    v = dest
+    while v != src and prev[v] != None:
+        cur_route.append(v)
+        p = prev[v]
+        A[p][v] += payload
+        A[v][p] += payload
+        v = p
+    cur_route.reverse()
+
+def dijkstra(G, N, C, A, src, dest):
+    d = [1e100 for x in range(10)]
+    d[src] = 0
+    prev = [ None for _ in range(10)]
+    Q = q.PriorityQueue()
+
+    for i in range(10):
+        item = (d[i], i)
+        Q.put(item)
+
+    while not Q.empty():
+        _, u = Q.get()
+        for v in range(10):
+            if (u,v) in G.edges() and d[v] > d[u] + 1:
+                if C[u][v] > PACKET_SIZE * (A[u][v] + N[u][v]):
+                    d[v] = d[u] + 1
+                    prev[v] = u
+                    Q.put((d[v], v))
+
+    return d, prev
 
 def makeGraph():
     G = nx.Graph()
@@ -32,15 +64,45 @@ def makeGraph():
 
     for edge in edges:
         u,v = edge
-        k = rng.randint(1, 7) # max num of packets
-        n = 3+k # real bit-size of packets
-        N = rng.randint(1, 2**k) 
-        G.add_edge(u,v, cap=2**n+1, N=N)
+        G.add_edge(u,v)
     
     return G
 
+def empty_matrix():
+    return np.zeros((10,10), dtype=np.int32)
+
+def N_matrix():
+    N = empty_matrix()
+    for i in range(10):
+        for j in range(10):
+            if i != j:
+                N[i][j] = 64
+    return N
+
+def C_matrix(G):
+    C = empty_matrix()
+    for u,v in G.edges():
+        bits = 1024 * PACKET_SIZE
+        C[u][v] = bits
+        C[v][u] = bits
+    return C
+
+def A_matrix(G, N, C):
+    A = empty_matrix()
+    for i in range(10):
+        for j in range(10):
+            if i > j:
+                route(G, N, C, A, i, j)
+    return A
 
 if __name__ == "__main__":
     G = makeGraph()
+    N = N_matrix()
+    C = C_matrix(G)
+    A = A_matrix(G, N, C)
+    print(N)
+    print(C)
+    print(A)
+
     draw_graph(G, "Petersen", 1)
     plt.show()
