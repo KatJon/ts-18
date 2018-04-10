@@ -72,7 +72,7 @@ Wyjściowa macierz A:
  [  0   0   0 320   0 320   0   0 320   0]]
 ```
 
-Opóźnienie dla podstawowej topologii: `T = 0.87%`
+Opóźnienie dla podstawowej topologii: `T = 0.00868 s/pakiet`
 
 
 ### Test 1

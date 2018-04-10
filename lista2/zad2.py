@@ -10,7 +10,7 @@ PACKET_SIZE = 8
 def draw_graph(G, Title, T, K):
     plt.figure(K)
     plt.suptitle(Title)
-    plt.title("T = {0:.2%}".format(T))
+    plt.title("T = {0:.5} s/pakiet".format(T))
     layout = nx.circular_layout(G)
     nx.draw_circular(G, with_labels=True)
 
