@@ -7,46 +7,41 @@ def crc(data):
     fill_crc = ('0'*32) + my_crc
 
     return fill_crc[-32:]
+#end crc
 
-def stuff(idata, outfile):
-    frame = '01111110'
-
-    checksum = crc(idata)
-
+def frame(data):
+    flag = '01111110'
+    checksum = crc(data)
     output = ''
     ones = 0
-    for c in idata:
-        if c == '1':
-            ones += 1
-        else:
-            ones = 0
+    for c in data:
+        ones = ones + 1 if c == '1' else 0
         output += c
         if ones == 5:
             ones = 0
             output += '0'
 
-    odata = frame + output + frame + checksum
+    return flag + output + flag + checksum
+#end frame
 
+def encode(idata, outfile):
+    odata = frame(idata)
     with open(outfile, 'w') as out:
         out.write(odata)
-# end stuff
+# end encode
 
-def unstuff(idata, outfile):
-    if len(idata) < 8 + 8 + 32:
-        print('Invalid input format')
-        return
+def unframe(data):
+    f1 = data[0:8]
+    content = data[8:-40]
+    f2 = data[-40:-32]
+    checksum = data[-32:]
 
-    f1 = idata[0:8]
-    content = idata[8:-40]
-    f2 = idata[-40:-32]
-    checksum = idata[-32:]
-
-    frame = '01111110'
+    flag = '01111110'
         
-    if f1 != frame or f2 != frame:
-        print('Invalid frame')
-        return
-    
+    if f1 != flag or f2 != flag:
+        print('Invalid flag')
+        return None
+
     data = ''
     ones = 0
     for c in content:
@@ -54,24 +49,34 @@ def unstuff(idata, outfile):
             ones = 0
             if c != '0':
                 print('Invalid stuffing')
-                return
+                return None
         else:
-            if c == '1':
-                ones += 1
-            else:
-                ones = 0
+            ones = ones + 1 if c == '1' else 0
             data += c
     
     checksum1 = crc(data)
 
     if checksum != checksum1:
         print('Invalid checksum')
+        return None
+    
+    return data
+#end unframe
+
+def decode(idata, outfile):
+    if len(idata) < 8 + 8 + 32:
+        print('Invalid input format')
+        return
+    
+    data = unframe(idata)
+
+    if data == None:
+        print('Error during reading frame')
         return
 
     with open(outfile, 'w') as out:
         out.write(data)
-
-# end unstuff
+# end decode
 
 def main():
     if len(sys.argv) < 4:
@@ -84,14 +89,10 @@ def main():
     with open(infile, 'r') as input:
         idata = input.read()
         if sys.argv[1] == '-e':
-            stuff(idata, outfile)
+            encode(idata, outfile)
         else:
-            unstuff(idata, outfile)
+            decode(idata, outfile)
 # end main   
     
-
-    
-
 if __name__ == "__main__":
     main()
-
