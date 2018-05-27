@@ -1,4 +1,4 @@
-public class Z2Packet implements Comparable {
+public class Z2Packet {
     byte[] data;
 
     public Z2Packet(int size) {
@@ -25,13 +25,11 @@ public class Z2Packet implements Comparable {
         return x;
     }
 
-    @Override
-    public int compareTo(Object o) {
-        if (o instanceof Z2Packet) {
-            Z2Packet p = (Z2Packet) o;
-            return p.getIntAt(0) - this.getIntAt(0);
-        } else {
-            return 0;
-        }
+    public int getId() {
+        return getIntAt(0);
+    }
+
+    public char getPayload() {
+        return (char) data[4];
     }
 }

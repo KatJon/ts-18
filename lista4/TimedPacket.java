@@ -1,4 +1,4 @@
-class TimedPacket implements Comparable{
+class TimedPacket{
     private int retransmitTime;
     private Z2Packet packet;
     
@@ -15,8 +15,4 @@ class TimedPacket implements Comparable{
         return packet;
     }
 
-    @Override
-    public int compareTo(Object o) {
-        return -packet.compareTo(o);
-    }
 }

@@ -91,8 +91,8 @@ class Z2Sender {
         private boolean checkIfConfirmed() throws Exception{
             TimedPacket tp = packetsSent.peek();
             Z2Packet sentPacket = tp.getPacket();
-            Integer sentId = sentPacket.getIntAt(0);
-            char payload = (char) sentPacket.data[4];
+            Integer sentId = sentPacket.getId();
+            char payload = sentPacket.getPayload();
 
             synchronized (confirmationsLock) {
                 if (confirmations.contains(sentId)) {

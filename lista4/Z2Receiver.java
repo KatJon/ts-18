@@ -43,8 +43,8 @@ public class Z2Receiver {
                     socket.receive(packet);
 
                     Z2Packet p = new Z2Packet(packet.getData());
-                    int idx = p.getIntAt(0);
-                    char payload = (char) p.data[4];
+                    int idx = p.getId();
+                    char payload = p.getPayload();
 
                     synchronized (packetsLock) {
                         packets.put(idx, payload);
